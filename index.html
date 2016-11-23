@@ -1,0 +1,227 @@
+<html>
+    <head>
+       
+        <title>Colby's Music Learning Game</title>
+        <style>
+            
+            h1 {
+                text-align: center;
+            }
+        ul {
+    display: inline-block;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 150px;
+    background-color: #f1f1f1;
+}
+
+#buttonHolder > li {
+    display: block;
+    color: #000;
+    padding: 8px 0 8px 16px;
+    text-decoration: none;
+    text-align: center;
+    font-size: 68px;
+}
+
+li:hover {
+    background-color: greenyellow;
+    color: white;
+}
+        </style>
+    </head>
+    <body>
+    <h1>Colby's Music Reading Game 2.0</h1>
+    <canvas width="790" height="625" id="myCanvas" style="border: 1px solid rgb(0, 0, 0); background-image: url(&quot;https://upload.wikimedia.org/wikipedia/commons/4/4c/Grand_staff.svg&quot;);"></canvas>
+        <ul id="buttonHolder">
+            <li id="a">A</li>
+            <li id="b">B</li>
+            <li id="c">C</li>
+            <li id="d">D</li>
+            <li id="e">E</li>
+            <li id="f">F</li>
+            <li id="g">G</li>
+        </ul>
+        
+        <h3 id="answer">Version 2.0</h3>
+        <p>Zen Mode for practice after round ends</p>
+        <p>Mobile device friendly buttons</p>
+        <p>Extended range of notes</p>
+        <p>Larger notes that are placed with more accuracy</p>
+        <p>Fixed bug that deleted score after game ended</p>
+
+        <form id="myForm" action="saveScore.php" method="post">
+            Name:<br>
+            <input type="text" name="scoreName"><br>
+            <input type="submit" value="Submit your score">
+            <input type="hidden" name="highScore" value="Content of the extra variable" >
+
+            </form>
+        
+        
+    <script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var testArray = ['f', 'g','a','b','c','d','e','f','g','a','b', 'c', 'd', 'e','f','g','a', 'b','c','d','e','f', 'g'];
+
+    canvas.style.backgroundImage = "url('https://upload.wikimedia.org/wikipedia/commons/4/4c/Grand_staff.svg')";
+    document.addEventListener("keypress", keyPressHandler, false);
+    var myNote = {
+        color: "black",
+        radius: 17,
+        x: 500,
+    }
+    var score = 0;
+    var currentNote;
+    var noteNumber;
+    var mychoice;
+    var d = new Date();
+    var startTime = d.getTime();
+    var myResult = "Select notes with keyboard (60 seconds).";
+    var resultColor = "black";
+    var resultPosition = 150;
+    var finalScore;
+        
+    for(var x = 2; x<=8; x++) {
+        document.getElementById(testArray[x]).addEventListener("click", clickHandler, false);
+    }
+        
+    function clickHandler(e) {
+        mychoice = e.target.id;
+        resultPosition = canvas.width/2-60;
+        if (currentNote == mychoice) {
+            resultColor = "black";
+            myResult = "Correct, it's " + currentNote;
+            score++;
+        } 
+        else {
+            myResult = "Wrong, it's " + currentNote;
+            resultColor = "red";
+             }
+        doIt();
+    }
+        
+    function keyPressHandler(e) {
+        mychoice = String.fromCharCode(e.keyCode);
+        resultPosition = canvas.width/2-60;
+        if (currentNote == mychoice) {
+            resultColor = "black";
+            myResult = "Correct, it's " + currentNote;
+            score++;
+        } 
+        else {
+            myResult = "Wrong, it's " + currentNote;
+            resultColor = "red";
+             }
+        doIt();
+    }
+        
+    function testGen() {
+        noteNumber = Math.floor(Math.random()*23);
+        currentNote = testArray[noteNumber];
+    }
+    
+    function testNote(Note) {
+        var yPosition = 5;
+        if (Note < 11) {
+            yPosition = 608 - (Note*205)/10;
+        }
+        else if (Note > 11) {
+            yPosition = 237 - (Note-12)*(205/10);
+        }
+        else if (Note == 11) {
+//            yPosition = 384 - (Math.floor(Math.random()*2))*124;
+            yPosition = 384;
+        }
+        ctx.beginPath();
+        ctx.arc(myNote.x, yPosition, myNote.radius, 0, Math.PI*2);
+        ctx.fillStyle = myNote.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+        
+    function timer() {
+        var dt = new Date();
+        ellapsedTime = (dt.getTime() - d.getTime())/1000;
+        if (ellapsedTime < 60) {
+            drawTime(ellapsedTime);
+        }
+        else {
+            myResult = "Time is up. Your score was " + score;
+            resultPosition = 200
+            drawTime(60);
+            finalScore = score;
+            createForm();
+            clearInterval(myTimer);
+            setInterval(afterGame,100);
+             }  
+    }
+        
+    function drawTime(currentTime){
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    testNote(noteNumber);
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Time(s): " + Math.round(currentTime * 10) /10a, (canvas.width/2) - 150, 35);
+    ctx.closePath();
+        
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Score: " + score, canvas.width - 150, 35);
+    ctx.closePath();
+        
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = resultColor;
+    ctx.fillText(myResult, resultPosition, canvas.height/2 + 20);
+    ctx.closePath();
+    }
+    
+    function afterGame() {
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    testNote(noteNumber);
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Zen Mode", (canvas.width/2) - 100, 35);
+    ctx.closePath();    
+        
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Final Score: " + finalScore, canvas.width - 210, 35);
+    ctx.closePath();
+    
+    ctx.beginPath();
+    ctx.font = "30px Arial";
+    ctx.fillStyle = resultColor;
+    ctx.fillText(myResult, resultPosition, canvas.height/2 + 20);
+    ctx.closePath();
+
+    }
+        
+    function createForm() {
+        var myForm = document.getElementById("myForm");
+        myForm.highScore.value = finalScore;
+        myForm.style.display = "block";
+    }
+
+    function doIt() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        testGen();
+        testNote(noteNumber);
+    }
+        
+        document.getElementById("myForm").style.display = "none";
+        doIt();
+        var myTimer = setInterval(timer,25);
+
+
+        </script>
+        
+    
+
+</body></html>
